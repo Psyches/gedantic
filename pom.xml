@@ -9,12 +9,12 @@
 	<description>A web-based demonstration of gedcom4j, that allows users to upload GEDCOM files and perform analyses on their data for possible problems, anomalies, areas to work on, etc.</description>
 	<url>http://gedantic.org</url>
 	<scm>
-		<url>https://github.com/frizbog/gedantic.git</url>
+		<url>https://github.com/Psyches/gedantic.git</url>
 		<developerConnection>Matthew R. Harrah</developerConnection>
 	</scm>
 	<issueManagement>
 		<system>github</system>
-		<url>https://github.com/frizbog/gedantic/issues</url>
+		<url>https://github.com/Psyches/gedantic/issues</url>
 	</issueManagement>
 
 	<dependencies>
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>org.gedcom4j</groupId>
 			<artifactId>gedcom4j</artifactId>
-			<version>3.0.3</version>
+			<version>3.1.1-SNAPSHOT</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 
 
@@ -157,7 +157,7 @@
 				<configuration>
 					<header>LICENSE-gedantic.txt</header>
 					<includes>
-						<include>src/test/java/**</include>
+						<!--  <include>src/test/java/**</include>  -->
 						<include>src/main/java/**</include>
 						<include>src/main/webapp/**</include>
 					</includes>
@@ -187,4 +187,13 @@
 			</plugin>
 		</plugins>
 	</build>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.gedcom4j</groupId>
+				<artifactId>gedcom4j</artifactId>
+				<version>3.1.1</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>
