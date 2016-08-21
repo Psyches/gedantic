@@ -330,7 +330,6 @@ public class WorkbookCreator {
                 nextCol();
                 @SuppressWarnings("unchecked")
                 List<List<SimpleRelationship>> path = (List<List<SimpleRelationship>>) rrr.getValue();
-                StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < path.size(); i++) {
                     List<SimpleRelationship> chain = path.get(i);
                     for (int j = 0; j < chain.size(); j++) {
