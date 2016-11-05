@@ -24,39 +24,46 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.gedantic.web.servlet;
+package org.gedantic.analyzer.result;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.gedantic.analyzer.AResult;
 
 /**
- * A Servlet for downloading the sample gedcom so users can see the data that is being analyzed
+ * An analysis result about a generic object which is described with a string rather than a reference to an object
  * 
  * @author frizbog
  */
-public class DownloadSampleServlet extends HttpServlet {
+public class UnrelatedResult extends AResult {
 
     /**
-     * Serial Version UID
+     * The item this result is about
      */
-    private static final long serialVersionUID = -1975124416340156620L;
+    private final String item;
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("text/gedcom");
-        resp.setHeader("Content-disposition", "attachment; filename=gedantic%20sample.ged");
-        try (InputStream in = this.getClass().getClassLoader().getResourceAsStream("gedantic sample.ged")) {
-            byte[] buffer = new byte[4096];
-            int length;
-            while ((length = in.read(buffer)) > 0) {
-                resp.getOutputStream().write(buffer, 0, length);
-            }
-            resp.getOutputStream().flush();
-        }
+    /**
+     * Constructor
+     * 
+     * @param item
+     *            a description of the item with the finding
+     * @param factType
+     *            the fact that the finding relates to - optional
+     * @param value
+     *            the value that was problematic - optional
+     * @param problem
+     *            a description of the problem - optional
+     */
+    public UnrelatedResult(String item, String factType, String value, String problem) {
+        super(factType, value, problem);
+        this.item = item;
     }
+
+    /**
+     * Get the item description
+     * 
+     * @return the item
+     */
+    public String getItem() {
+        return item;
+    }
+
 }

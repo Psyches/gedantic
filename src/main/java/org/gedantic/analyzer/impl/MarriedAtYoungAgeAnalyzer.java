@@ -36,7 +36,11 @@ import org.gedantic.analyzer.AnalysisTag;
 import org.gedantic.analyzer.result.DateAndString;
 import org.gedantic.analyzer.result.FamilyRelatedResult;
 import org.gedantic.web.Constants;
-import org.gedcom4j.model.*;
+import org.gedcom4j.model.Family;
+import org.gedcom4j.model.FamilyEvent;
+import org.gedcom4j.model.Gedcom;
+import org.gedcom4j.model.Individual;
+import org.gedcom4j.model.enumerations.FamilyEventType;
 import org.gedcom4j.parser.DateParser;
 import org.gedcom4j.parser.DateParser.ImpreciseDatePreference;
 
@@ -89,10 +93,10 @@ public class MarriedAtYoungAgeAnalyzer extends AAnalyzer {
                 continue;
             }
 
-            Individual husband = f.getHusband();
+            Individual husband = f.getHusband().getIndividual();
             DateAndString husbandLatestBirthDate = getBirthDate(husband, ImpreciseDatePreference.FAVOR_LATEST);
 
-            Individual wife = f.getWife();
+            Individual wife = f.getWife().getIndividual();
             DateAndString wifeLatestBirthDate = getBirthDate(wife, ImpreciseDatePreference.FAVOR_LATEST);
 
             // Both spouses need a birth date to proceed
@@ -151,11 +155,6 @@ public class MarriedAtYoungAgeAnalyzer extends AAnalyzer {
     @Override
     public AnalysisTag[] getTags() {
         return new AnalysisTag[] { AnalysisTag.PROBLEM, AnalysisTag.FAMILIES };
-    }
-
-    @Override
-    public boolean isNewish() {
-        return true;
     }
 
 }

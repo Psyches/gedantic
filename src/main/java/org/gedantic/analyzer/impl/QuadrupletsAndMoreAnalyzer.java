@@ -26,8 +26,13 @@
  */
 package org.gedantic.analyzer.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.gedantic.analyzer.AAnalyzer;
 import org.gedantic.analyzer.AResult;
@@ -38,6 +43,7 @@ import org.gedantic.web.Constants;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
+import org.gedcom4j.model.IndividualReference;
 import org.gedcom4j.parser.DateParser.ImpreciseDatePreference;
 
 /**
@@ -62,7 +68,8 @@ public class QuadrupletsAndMoreAnalyzer extends AAnalyzer {
              * other as on the same date (multiple births)
              */
             Map<DateAndString, Set<Individual>> births = new HashMap<>();
-            for (Individual i : f.getChildren()) {
+            for (IndividualReference iRef : f.getChildren()) {
+                Individual i = iRef.getIndividual();
                 DateAndString birthDate = getBirthDate(i, ImpreciseDatePreference.PRECISE);
                 if (birthDate == null || birthDate.getDate() == null) {
                     continue;
@@ -112,11 +119,6 @@ public class QuadrupletsAndMoreAnalyzer extends AAnalyzer {
     @Override
     public AnalysisTag[] getTags() {
         return new AnalysisTag[] { AnalysisTag.PROBLEM, AnalysisTag.FAMILIES };
-    }
-
-    @Override
-    public boolean isNewish() {
-        return true;
     }
 
 }

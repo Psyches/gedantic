@@ -26,7 +26,11 @@
  */
 package org.gedantic.analyzer.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.gedantic.analyzer.AAnalyzer;
 import org.gedantic.analyzer.AResult;
@@ -37,6 +41,7 @@ import org.gedantic.web.Constants;
 import org.gedcom4j.model.FamilyChild;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
+import org.gedcom4j.model.IndividualReference;
 
 /**
  * @author frizbog
@@ -56,19 +61,21 @@ public class OnlyChildrenAnalyzer extends AAnalyzer {
             }
             Set<Individual> kids = new HashSet<>();
             for (FamilyChild fc : i.getFamiliesWhereChild()) {
-                kids.addAll(fc.getFamily().getChildren());
+                for (IndividualReference ir : fc.getFamily().getChildren()) {
+                    kids.add(ir.getIndividual());
+                }
             }
             if (kids.size() == 1) {
                 for (FamilyChild fc : i.getFamiliesWhereChild()) {
                     StringBuilder parents = new StringBuilder("Child of ");
                     if (fc.getFamily().getWife() != null) {
-                        parents.append(fc.getFamily().getWife().getFormattedName());
+                        parents.append(fc.getFamily().getWife().getIndividual().getFormattedName());
                         parents.append(" and ");
                     }
                     if (fc.getFamily().getHusband() == null) {
                         parents.append("unknown");
                     } else {
-                        parents.append(fc.getFamily().getHusband().getFormattedName());
+                        parents.append(fc.getFamily().getHusband().getIndividual().getFormattedName());
                     }
                     result.add(new IndividualRelatedResult(i, "Parents", parents.toString(), null));
                 }

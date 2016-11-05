@@ -33,7 +33,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.gedantic.analyzer.result.DateAndString;
-import org.gedcom4j.model.*;
+import org.gedcom4j.model.Individual;
+import org.gedcom4j.model.IndividualEvent;
+import org.gedcom4j.model.PersonalName;
+import org.gedcom4j.model.StringWithCustomFacts;
+import org.gedcom4j.model.enumerations.IndividualEventType;
 import org.gedcom4j.parser.DateParser;
 import org.gedcom4j.parser.DateParser.ImpreciseDatePreference;
 
@@ -133,7 +137,7 @@ public abstract class AAnalyzer implements IAnalyzer {
      * @return a Set of all the surnames (as Strings)
      */
     protected Set<String> getSurnamesFromIndividual(Individual i) {
-        TreeSet<String> result = new TreeSet<String>();
+        TreeSet<String> result = new TreeSet<>();
         Pattern pattern = Pattern.compile(".*\\/(.*)\\/.*");
         for (PersonalName pn : i.getNames()) {
             if ("<No /name>/".equals(pn.getBasic())) {
@@ -180,7 +184,7 @@ public abstract class AAnalyzer implements IAnalyzer {
      *            the string with custom tags
      * @return true if the string supplied non-null, and has something other than whitespace in it
      */
-    protected boolean isSpecified(StringWithCustomTags swct) {
+    protected boolean isSpecified(StringWithCustomFacts swct) {
         if (swct == null || swct.getValue() == null || swct.getValue().isEmpty()) {
             return false;
         }

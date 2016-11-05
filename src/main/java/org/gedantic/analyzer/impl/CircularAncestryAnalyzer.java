@@ -54,7 +54,7 @@ public class CircularAncestryAnalyzer extends AAnalyzer {
      */
     @Override
     public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<AResult>();
+        List<AResult> result = new ArrayList<>();
         for (Individual i : g.getIndividuals().values()) {
             List<Individual> ancestors = new ArrayList<>(i.getAncestors());
             if (ancestors.contains(i)) {
@@ -109,8 +109,8 @@ public class CircularAncestryAnalyzer extends AAnalyzer {
         RelationshipCalculator rc = new RelationshipCalculator();
         for (FamilyChild fc : i.getFamiliesWhereChild()) {
             Family f = fc.getFamily();
-            Individual father = f.getHusband();
-            Individual mother = f.getWife();
+            Individual father = f.getHusband() == null ? null : f.getHusband().getIndividual();
+            Individual mother = f.getWife() == null ? null : f.getWife().getIndividual();
             if (father != null && father.getAncestors().contains(i)) {
                 rc.calculateRelationships(father, i, false);
                 for (Relationship r : rc.getRelationshipsFound()) {

@@ -33,31 +33,46 @@
 <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles"%>
 
 <li class="list-group-item"><span class="list-group-item-heading"> 
-	<c:if test="${class:hasProperty(result, 'individual')}">
+	<c:choose>
+	<c:when test="${class:hasProperty(result, 'individual')}">
 		<%-- individual result --%>
 		Individual: ${result.individual.formattedName} 
 		<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="${fn:escapeXml(result.individual)}" ></span> 
-	</c:if> 
-	<c:if test="${class:hasProperty(result, 'family')}">
+	</c:when> 
+	<c:when test="${class:hasProperty(result, 'family')}">
 		<%-- family result --%>
 		Family: 
 		<c:choose>
-			<c:when test="${not empty result.family.husband}">${fn:escapeXml(result.family.husband.formattedName)} 
-				<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="${fn:escapeXml(result.family.husband)}" ></span> 
+			<c:when test="${not empty result.family.husband.individual}">${fn:escapeXml(result.family.husband.individual.formattedName)} 
+				<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="${fn:escapeXml(result.family.husband.individual)}" ></span> 
 				and
 				<c:choose>
-					<c:when test="${not empty result.family.wife}">${fn:escapeXml(result.family.wife.formattedName)} 
-						<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="${fn:escapeXml(result.family.wife)}" ></span>
+					<c:when test="${not empty result.family.wife.individual}">${fn:escapeXml(result.family.wife.individual.formattedName)} 
+						<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="${fn:escapeXml(result.family.wife.individual)}" ></span>
 					</c:when>
 					<c:otherwise>unknown wife</c:otherwise>
 				</c:choose>
 			</c:when>
-			<c:otherwise>${fn:escapeXml(result.family.wife.formattedName)} 
-				<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="${fn:escapeXml(result.family.wife)}" ></span> and unknown husband
+			<c:otherwise>${fn:escapeXml(result.family.wife.individual.formattedName)} 
+				<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="${fn:escapeXml(result.family.wife.individual)}" ></span> and unknown husband
 			</c:otherwise>
 		</c:choose>
-
-	</c:if> 
+	</c:when>
+	<c:when test="${class:hasProperty(result, 'repository')}">
+		<%-- Repository result --%>
+		Repository: ${result.repository.name} 
+	</c:when> 
+	<c:when test="${class:hasProperty(result, 'submitter')}">
+		<%-- Submitter result --%>
+		Submitter: ${result.submitter.name} 
+	</c:when> 
+	<c:when test="${class:hasProperty(result, 'item')}">
+		<%-- Unrleated result --%>
+		${result.item} 
+	</c:when> 
+	<c:otherwise>
+	</c:otherwise>
+	</c:choose> 
 	
 	<tiles:insertAttribute name="factsValuesProblems" />
 
