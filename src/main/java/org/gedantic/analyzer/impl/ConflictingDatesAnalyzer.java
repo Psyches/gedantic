@@ -27,7 +27,6 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +34,8 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.MixedResultSortComparator;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.AbstractEvent;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.FamilyEvent;
@@ -60,26 +55,15 @@ import org.gedcom4j.parser.DateParser.ImpreciseDatePreference;
 public class ConflictingDatesAnalyzer extends AAnalyzer {
 
     /**
-     * The gedcom being analyzed
-     */
-    private Gedcom gedcom;
-
-    /**
-     * The results we will return
-     */
-    private final List<AResult> result = new ArrayList<>();
-
-    /**
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        gedcom = g;
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
 
-        checkIndividualEvents();
-        checkFamilyEvents();
+        checkIndividualEvents(g, result);
+        checkFamilyEvents(g, result);
 
-        Collections.sort(result, new MixedResultSortComparator());
         return result;
     }
 
@@ -99,14 +83,6 @@ public class ConflictingDatesAnalyzer extends AAnalyzer {
         return "Conflicting dates";
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_MIXED_RESULTS;
-    }
-
     @Override
     public AnalysisTag[] getTags() {
         return new AnalysisTag[] { AnalysisTag.PROBLEM, AnalysisTag.FAMILIES, AnalysisTag.INDIVIDUALS };
@@ -114,12 +90,17 @@ public class ConflictingDatesAnalyzer extends AAnalyzer {
 
     /**
      * Check the family events
+     * 
+     * @param gedcom
+     *            the gedcom
+     * @param result
+     *            the results
      */
-    private void checkFamilyEvents() {
+    private void checkFamilyEvents(Gedcom gedcom, List<AnalysisResult> result) {
         DateParser dp = new DateParser();
-        for (Family i : gedcom.getFamilies().values()) {
+        for (Family f : gedcom.getFamilies().values()) {
             Map<FamilyEventType, List<AbstractEvent>> indEventsByType = new TreeMap<>();
-            for (FamilyEvent e : i.getEvents()) {
+            for (FamilyEvent e : f.getEvents()) {
                 List<AbstractEvent> eventsOfThisType = indEventsByType.get(e.getType());
                 if (eventsOfThisType == null) {
                     eventsOfThisType = new ArrayList<>();
@@ -159,8 +140,8 @@ public class ConflictingDatesAnalyzer extends AAnalyzer {
                         // Ok, enough getting to the data - we can finally compare
                         if (innerDateEarliest.after(outerDateLatest) || innerDateLatest.before(outerDateEarliest)) {
                             // Not overlapping so we have a conflict
-                            result.add(new FamilyRelatedResult(i, type.getDisplay(), outerDateString + " and " + innerDateString,
-                                    null));
+                            result.add(new AnalysisResult("Family", getFamilyDescriptor(f), type.getDisplay(), outerDateString,
+                                    "Conflicts with other value " + innerDateString));
                         }
                     }
                 }
@@ -171,8 +152,13 @@ public class ConflictingDatesAnalyzer extends AAnalyzer {
 
     /**
      * Check individual events for conflicts
+     * 
+     * @param gedcom
+     *            the gedcom
+     * @param result
+     *            the results
      */
-    private void checkIndividualEvents() {
+    private void checkIndividualEvents(Gedcom gedcom, List<AnalysisResult> result) {
         DateParser dp = new DateParser();
         for (Individual i : gedcom.getIndividuals().values()) {
             Map<IndividualEventType, List<AbstractEvent>> indEventsByType = new TreeMap<>();
@@ -216,8 +202,8 @@ public class ConflictingDatesAnalyzer extends AAnalyzer {
                         // Ok, enough getting to the data - we can finally compare
                         if (innerDateEarliest.after(outerDateLatest) || innerDateLatest.before(outerDateEarliest)) {
                             // Not overlapping so we have a conflict
-                            result.add(new IndividualRelatedResult(i, type.getDisplay(), outerDateString + " and "
-                                    + innerDateString, null));
+                            result.add(new AnalysisResult("Individual", i.getFormattedName(), type.getDisplay(), outerDateString,
+                                    "Conflicts with other value " + innerDateString));
                         }
                     }
                 }

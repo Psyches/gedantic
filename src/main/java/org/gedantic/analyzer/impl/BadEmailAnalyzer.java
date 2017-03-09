@@ -31,14 +31,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.analyzer.result.RepositoryRelatedResult;
-import org.gedantic.analyzer.result.SubmitterRelatedResult;
-import org.gedantic.analyzer.result.UnrelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.FamilyEvent;
 import org.gedcom4j.model.Gedcom;
@@ -63,8 +57,8 @@ public class BadEmailAnalyzer extends AAnalyzer {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("(?i)\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b");
 
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
 
         checkHeaderCorporation(g, result);
         checkIndividuals(g, result);
@@ -85,11 +79,6 @@ public class BadEmailAnalyzer extends AAnalyzer {
     }
 
     @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_MIXED_RESULTS;
-    }
-
-    @Override
     public AnalysisTag[] getTags() {
         return new AnalysisTag[] { AnalysisTag.PROBLEM, AnalysisTag.FAMILIES, AnalysisTag.INDIVIDUALS, AnalysisTag.SOURCES };
     }
@@ -102,15 +91,15 @@ public class BadEmailAnalyzer extends AAnalyzer {
      * @param result
      *            the results we're collecting
      */
-    protected void checkFamilies(Gedcom g, List<AResult> result) {
+    protected void checkFamilies(Gedcom g, List<AnalysisResult> result) {
         for (Family f : g.getFamilies().values()) {
             if (f.getEvents() != null) {
                 for (FamilyEvent fe : f.getEvents()) {
                     if (fe.getEmails() != null) {
                         for (StringWithCustomFacts e : fe.getEmails()) {
                             if (e.getValue() != null && !EMAIL_PATTERN.matcher(e.getValue()).matches()) {
-                                result.add(new FamilyRelatedResult(f, "Email for " + fe.getType().getDisplay() + " event", e
-                                        .getValue(), null));
+                                result.add(new AnalysisResult("Family", getFamilyDescriptor(f), "Email for " + fe.getType()
+                                        .getDisplay(), e.getValue(), null));
                             }
                         }
                     }
@@ -127,12 +116,12 @@ public class BadEmailAnalyzer extends AAnalyzer {
      * @param result
      *            the results we're collecting
      */
-    protected void checkHeaderCorporation(Gedcom g, List<AResult> result) {
+    protected void checkHeaderCorporation(Gedcom g, List<AnalysisResult> result) {
         if (g.getHeader().getSourceSystem() != null && g.getHeader().getSourceSystem().getCorporation() != null && g.getHeader()
                 .getSourceSystem().getCorporation().getEmails() != null) {
             for (StringWithCustomFacts e : g.getHeader().getSourceSystem().getCorporation().getEmails()) {
                 if (e.getValue() != null && !EMAIL_PATTERN.matcher(e.getValue()).matches()) {
-                    result.add(new UnrelatedResult("Header - Source System", "Email for Corporation", e.getValue(), null));
+                    result.add(new AnalysisResult("Header - Source System", null, "Email for Corporation", e.getValue(), null));
                 }
             }
         }
@@ -146,15 +135,15 @@ public class BadEmailAnalyzer extends AAnalyzer {
      * @param result
      *            the results we're collecting
      */
-    protected void checkIndividuals(Gedcom g, List<AResult> result) {
+    protected void checkIndividuals(Gedcom g, List<AnalysisResult> result) {
         for (Individual i : g.getIndividuals().values()) {
             if (i.getAttributes() != null) {
                 for (IndividualAttribute ia : i.getAttributes()) {
                     if (ia.getEmails() != null) {
                         for (StringWithCustomFacts e : ia.getEmails()) {
                             if (e.getValue() != null && !EMAIL_PATTERN.matcher(e.getValue()).matches()) {
-                                result.add(new IndividualRelatedResult(i, "Email for " + ia.getType().getDisplay() + " attribute", e
-                                        .getValue(), null));
+                                result.add(new AnalysisResult("Individual", i.getFormattedName(), "Email for " + ia.getType()
+                                        .getDisplay() + " attribute", e.getValue(), null));
                             }
                         }
                     }
@@ -165,8 +154,8 @@ public class BadEmailAnalyzer extends AAnalyzer {
                     if (ie.getEmails() != null) {
                         for (StringWithCustomFacts e : ie.getEmails()) {
                             if (e.getValue() != null && !EMAIL_PATTERN.matcher(e.getValue()).matches()) {
-                                result.add(new IndividualRelatedResult(i, "Email for " + ie.getType().getDisplay() + " event", e
-                                        .getValue(), null));
+                                result.add(new AnalysisResult("Individual", i.getFormattedName(), "Email for " + ie.getType()
+                                        .getDisplay() + " event", e.getValue(), null));
                             }
                         }
                     }
@@ -183,12 +172,12 @@ public class BadEmailAnalyzer extends AAnalyzer {
      * @param result
      *            the results we're collecting
      */
-    protected void checkRepositories(Gedcom g, List<AResult> result) {
+    protected void checkRepositories(Gedcom g, List<AnalysisResult> result) {
         for (Repository r : g.getRepositories().values()) {
             if (r.getEmails() != null) {
                 for (StringWithCustomFacts e : r.getEmails()) {
                     if (e.getValue() != null && !EMAIL_PATTERN.matcher(e.getValue()).matches()) {
-                        result.add(new RepositoryRelatedResult(r, "Email for Repository", e.getValue(), null));
+                        result.add(new AnalysisResult("Repository", "" + r.getName(), "Email", e.getValue(), null));
                     }
                 }
             }
@@ -203,12 +192,12 @@ public class BadEmailAnalyzer extends AAnalyzer {
      * @param result
      *            the results we're collecting
      */
-    protected void checkSubmitters(Gedcom g, List<AResult> result) {
+    protected void checkSubmitters(Gedcom g, List<AnalysisResult> result) {
         for (Submitter s : g.getSubmitters().values()) {
             if (s.getEmails() != null) {
                 for (StringWithCustomFacts e : s.getEmails()) {
                     if (e.getValue() != null && !EMAIL_PATTERN.matcher(e.getValue()).matches()) {
-                        result.add(new SubmitterRelatedResult(s, "Email for Submitter", e.getValue(), null));
+                        result.add(new AnalysisResult("Submitter", "" + s.getName(), "Email", e.getValue(), null));
                     }
                 }
             }

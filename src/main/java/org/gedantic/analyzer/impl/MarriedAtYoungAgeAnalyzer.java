@@ -31,11 +31,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.DateAndString;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.web.Constants;
+import org.gedantic.analyzer.DateAndString;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.FamilyEvent;
 import org.gedcom4j.model.Gedcom;
@@ -64,11 +62,11 @@ public class MarriedAtYoungAgeAnalyzer extends AAnalyzer {
     /**
      * Date parser
      */
-    DateParser dp = new DateParser();
+    private static final DateParser DP = new DateParser();
 
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Family f : g.getFamilies().values()) {
             if (f.getHusband() == null || f.getWife() == null || f.getEvents() == null || f.getEvents().isEmpty()) {
@@ -81,7 +79,7 @@ public class MarriedAtYoungAgeAnalyzer extends AAnalyzer {
             for (FamilyEvent e : f.getEvents()) {
                 if (e.getType() == FamilyEventType.MARRIAGE) {
                     if (e.getDate() != null && e.getDate().getValue() != null) {
-                        Date d = dp.parse(e.getDate().getValue());
+                        Date d = DP.parse(e.getDate().getValue());
                         if (d != null && d.before(earliestMarriageDate)) {
                             earliestMarriage = e;
                             earliestMarriageDate = d;
@@ -129,8 +127,8 @@ public class MarriedAtYoungAgeAnalyzer extends AAnalyzer {
                     problem.append(wAgeAtMarriage);
                 }
 
-                result.add(new FamilyRelatedResult(f, FamilyEventType.MARRIAGE.getDisplay(), earliestMarriage.getDate().getValue(),
-                        problem.toString()));
+                result.add(new AnalysisResult("Family", getFamilyDescriptor(f), FamilyEventType.MARRIAGE.getDisplay(),
+                        earliestMarriage.getDate().getValue(), problem.toString()));
             }
         }
 
@@ -145,11 +143,6 @@ public class MarriedAtYoungAgeAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Married at young age";
-    }
-
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_COUPLE_RESULTS;
     }
 
     @Override

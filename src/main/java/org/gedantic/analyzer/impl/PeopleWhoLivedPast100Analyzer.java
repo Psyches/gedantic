@@ -27,16 +27,12 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.IndividualResultSortComparator;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
 import org.gedcom4j.model.IndividualEvent;
@@ -54,15 +50,15 @@ public class PeopleWhoLivedPast100Analyzer extends AAnalyzer {
     /**
      * Date parser
      */
-    private final DateParser dateParser = new DateParser();
+    private static final DateParser DP = new DateParser();
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
+    public List<AnalysisResult> analyze(Gedcom g) {
 
-        List<AResult> result = new ArrayList<>();
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Individual i : g.getIndividuals().values()) {
             List<IndividualEvent> deaths = i.getEventsOfType(IndividualEventType.DEATH);
@@ -78,7 +74,7 @@ public class PeopleWhoLivedPast100Analyzer extends AAnalyzer {
             String earliestBirthDateString = null;
             for (IndividualEvent b : births) {
                 if (b.getDate() != null && b.getDate().getValue() != null) {
-                    Date bd = dateParser.parse(b.getDate().getValue(), ImpreciseDatePreference.FAVOR_EARLIEST);
+                    Date bd = DP.parse(b.getDate().getValue(), ImpreciseDatePreference.FAVOR_EARLIEST);
                     if (bd != null && (earliestBirthDate == null || bd.before(earliestBirthDate))) {
                         earliestBirthDate = bd;
                         earliestBirthDateString = b.getDate().getValue();
@@ -93,7 +89,7 @@ public class PeopleWhoLivedPast100Analyzer extends AAnalyzer {
             String latestDeathDateString = null;
             for (IndividualEvent d : deaths) {
                 if (d.getDate() != null && d.getDate().getValue() != null) {
-                    Date dd = dateParser.parse(d.getDate().getValue(), ImpreciseDatePreference.FAVOR_LATEST);
+                    Date dd = DP.parse(d.getDate().getValue(), ImpreciseDatePreference.FAVOR_LATEST);
                     if (dd != null && (latestDeathDate == null || dd.after(latestDeathDate))) {
                         latestDeathDate = dd;
                         latestDeathDateString = d.getDate().getValue();
@@ -107,15 +103,14 @@ public class PeopleWhoLivedPast100Analyzer extends AAnalyzer {
             long difference = latestDeathDate.getTime() - earliestBirthDate.getTime();
             long yearsOld = difference / (365L * 24 * 60 * 60 * 1000); // approximate
             if (yearsOld >= 130) {
-                result.add(new IndividualRelatedResult(i, null, (String) null, "Lived to about " + yearsOld + " (b."
+                result.add(new AnalysisResult("Individual", i.getFormattedName(), null, null, "Lived to about " + yearsOld + " (b."
                         + earliestBirthDateString + ", d." + latestDeathDateString + ").  Probably incorrect dates."));
             } else if (yearsOld >= 100) {
-                result.add(new IndividualRelatedResult(i, null, (String) null, "Lived to about " + yearsOld + " (b."
+                result.add(new AnalysisResult("Individua;", i.getFormattedName(), null, null, "Lived to about " + yearsOld + " (b."
                         + earliestBirthDateString + ", d." + latestDeathDateString + ") - should verify."));
             }
         }
 
-        Collections.sort(result, new IndividualResultSortComparator());
         return result;
     }
 
@@ -133,14 +128,6 @@ public class PeopleWhoLivedPast100Analyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "People who lived to 100";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_INDIVIDUAL_RESULTS;
     }
 
     @Override

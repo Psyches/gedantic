@@ -36,10 +36,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
@@ -69,8 +67,8 @@ public class SimultaneousBirthsInMultipleLocationsAnalyzer extends AAnalyzer {
     }
 
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
         DateParser dp = new DateParser();
         for (Family f : g.getFamilies().values()) {
 
@@ -132,9 +130,11 @@ public class SimultaneousBirthsInMultipleLocationsAnalyzer extends AAnalyzer {
                 Set<Individual> kids = new HashSet<>();
                 String birthDateString = null;
                 for (Birth b : birthsOnDate) {
-                    places.add(b.birth.getPlace());
-                    kids.add(b.person);
-                    birthDateString = b.birth.getDate().getValue();
+                    if (b.birth.getPlace() != null) {
+                        places.add(b.birth.getPlace());
+                        kids.add(b.person);
+                        birthDateString = b.birth.getDate().getValue();
+                    }
                 }
                 if (places.size() > 1) {
                     // Found multiple places on this date
@@ -147,7 +147,7 @@ public class SimultaneousBirthsInMultipleLocationsAnalyzer extends AAnalyzer {
                         first = false;
                         problem.append(p.getPlaceName());
                     }
-                    result.add(new FamilyRelatedResult(f, null, kids, problem.toString()));
+                    result.add(new AnalysisResult("Family", getFamilyDescriptor(f), null, kids.toString(), problem.toString()));
                 }
             }
 
@@ -163,11 +163,6 @@ public class SimultaneousBirthsInMultipleLocationsAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Simultaneous births in multiple locations";
-    }
-
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_COUPLE_RESULTS;
     }
 
     @Override

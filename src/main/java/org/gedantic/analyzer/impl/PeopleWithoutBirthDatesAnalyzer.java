@@ -27,15 +27,11 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.IndividualResultSortComparator;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
 import org.gedcom4j.model.IndividualEvent;
@@ -50,9 +46,9 @@ public class PeopleWithoutBirthDatesAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
+    public List<AnalysisResult> analyze(Gedcom g) {
 
-        List<AResult> result = new ArrayList<>();
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Individual i : g.getIndividuals().values()) {
             if (i.getNames() == null || i.getNames().isEmpty()) {
@@ -60,18 +56,17 @@ public class PeopleWithoutBirthDatesAnalyzer extends AAnalyzer {
             }
             List<IndividualEvent> births = i.getEventsOfType(IndividualEventType.BIRTH);
             if (births.isEmpty()) {
-                result.add(new IndividualRelatedResult(i, null, (String) null, "No birth events."));
+                result.add(new AnalysisResult("Individual", i.getFormattedName(), null, null, "No birth events."));
             } else {
                 for (IndividualEvent b : births) {
                     if (b.getDate() == null || b.getDate().getValue() == null || b.getDate().getValue().isEmpty() || "UNKNOWN"
                             .equalsIgnoreCase(b.getDate().getValue())) {
-                        result.add(new IndividualRelatedResult(i, null, (String) null, "Birth event with no date."));
+                        result.add(new AnalysisResult("Individual", i.getFormattedName(), null, null, "Birth event with no date"));
                     }
                 }
             }
         }
 
-        Collections.sort(result, new IndividualResultSortComparator());
         return result;
     }
 
@@ -89,14 +84,6 @@ public class PeopleWithoutBirthDatesAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "People without birth dates";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_INDIVIDUAL_RESULTS;
     }
 
     @Override

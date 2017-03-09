@@ -31,10 +31,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.Gedcom;
 
@@ -46,8 +44,8 @@ import org.gedcom4j.model.Gedcom;
 public class CouplesWithSameBirthSurnames extends AAnalyzer {
 
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
         for (Family f : g.getFamilies().values()) {
             if (f.getWife() != null && f.getHusband() != null) {
 
@@ -59,7 +57,8 @@ public class CouplesWithSameBirthSurnames extends AAnalyzer {
 
                 if (wifeSurnames.containsAll(husbandSurnames) || husbandSurnames.containsAll(wifeSurnames)) {
                     wifeSurnames.addAll(husbandSurnames);
-                    result.add(new FamilyRelatedResult(f, "NAME", wifeSurnames.toString(), null));
+                    result.add(new AnalysisResult("Family", getFamilyDescriptor(f), "Name", wifeSurnames.toString(),
+                            "Same birth surnames"));
                 }
 
             }
@@ -75,11 +74,6 @@ public class CouplesWithSameBirthSurnames extends AAnalyzer {
     @Override
     public String getName() {
         return "Couples with same birth surnames";
-    }
-
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_COUPLE_RESULTS;
     }
 
     @Override

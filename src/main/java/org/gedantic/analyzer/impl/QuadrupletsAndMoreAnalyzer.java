@@ -35,11 +35,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.DateAndString;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.web.Constants;
+import org.gedantic.analyzer.DateAndString;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
@@ -54,8 +52,8 @@ import org.gedcom4j.parser.DateParser.ImpreciseDatePreference;
 public class QuadrupletsAndMoreAnalyzer extends AAnalyzer {
 
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
         for (Family f : g.getFamilies().values()) {
 
             // If there aren't at least 4 children there's nothing to do with this family
@@ -93,7 +91,8 @@ public class QuadrupletsAndMoreAnalyzer extends AAnalyzer {
             for (Entry<DateAndString, Set<Individual>> e : births.entrySet()) {
                 if (e.getValue().size() >= 4) {
                     // We got a hit, add to results
-                    result.add(new FamilyRelatedResult(f, null, e.getValue(), null));
+                    result.add(new AnalysisResult("Family", getFamilyDescriptor(f), null, e.getKey().getDateString(), e.getValue()
+                            .size() + " children born on this date"));
                 }
             }
 
@@ -109,11 +108,6 @@ public class QuadrupletsAndMoreAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Quadruplets and more";
-    }
-
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_COUPLE_RESULTS;
     }
 
     @Override

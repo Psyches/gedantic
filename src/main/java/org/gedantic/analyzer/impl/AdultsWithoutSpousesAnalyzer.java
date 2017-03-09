@@ -27,17 +27,13 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.IndividualResultSortComparator;
-import org.gedantic.analyzer.result.DateAndString;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
+import org.gedantic.analyzer.DateAndString;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.FamilySpouse;
 import org.gedcom4j.model.Gedcom;
@@ -55,9 +51,9 @@ public class AdultsWithoutSpousesAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
+    public List<AnalysisResult> analyze(Gedcom g) {
 
-        List<AResult> result = new ArrayList<>();
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Individual i : g.getIndividuals().values()) {
             boolean foundSpouse = false;
@@ -96,14 +92,13 @@ public class AdultsWithoutSpousesAnalyzer extends AAnalyzer {
             long difference = endDate.getTime() - birthDate.getDate().getTime();
             long yearsOld = difference / (365L * 24 * 60 * 60 * 1000); // approximate
             if (yearsOld >= 18) {
-                result.add(new IndividualRelatedResult(i, null, (String) null, (deathDate == null || deathDate.getDate() == null
-                        ? "Born " + yearsOld + " years ago with no death date available" : "Lived to " + yearsOld)
-                        + ", but no spouses"));
+                String problemDescription = (deathDate == null || deathDate.getDate() == null ? "Born " + yearsOld
+                        + " years ago with no death date available" : "Lived to " + yearsOld) + ", but no spouses";
+                result.add(new AnalysisResult("Individual", i.getFormattedName(), null, null, problemDescription));
             }
 
         }
 
-        Collections.sort(result, new IndividualResultSortComparator());
         return result;
     }
 
@@ -121,14 +116,6 @@ public class AdultsWithoutSpousesAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Adults without spouses";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_INDIVIDUAL_RESULTS;
     }
 
     @Override

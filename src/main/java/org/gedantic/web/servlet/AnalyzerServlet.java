@@ -27,6 +27,7 @@
 package org.gedantic.web.servlet;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -37,9 +38,10 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalyzerList;
 import org.gedantic.analyzer.IAnalyzer;
+import org.gedantic.analyzer.comparator.AnalysisResultComparator;
 import org.gedantic.web.Constants;
 import org.gedcom4j.model.Gedcom;
 import org.slf4j.Logger;
@@ -78,9 +80,9 @@ public class AnalyzerServlet extends HttpServlet {
      * @param resp
      *            the http response
      * @throws ServletException
-     *             if there is a code-related problem
+     *             if there is a code-related problemDescription
      * @throws IOException
-     *             if there is a network or storage-related problem
+     *             if there is a network or storage-related problemDescription
      */
     private void process(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();
@@ -112,7 +114,20 @@ public class AnalyzerServlet extends HttpServlet {
             return;
 
         }
-        List<? extends AResult> results = a.analyze(g);
+
+        Runtime rt = Runtime.getRuntime();
+        long maxMemory = rt.maxMemory();
+        long freeMemory = rt.freeMemory();
+        LOG.info("before analysis " + a.getId() + " - freeMemory:" + Double.toString(freeMemory / (1024 * 1024)) + " maxMemory:"
+                + Double.toString(maxMemory / (1024 * 1024)));
+
+        List<AnalysisResult> results = a.analyze(g);
+        Collections.sort(results, new AnalysisResultComparator());
+
+        maxMemory = rt.maxMemory();
+        freeMemory = rt.freeMemory();
+        LOG.info("after analysis " + a.getId() + " - freeMemory:" + Double.toString(freeMemory / (1024 * 1024)) + " maxMemory:"
+                + Double.toString(maxMemory / (1024 * 1024)));
 
         if ("true".equals(req.getParameter("excel"))) {
             @SuppressWarnings("resource")
@@ -126,7 +141,7 @@ public class AnalyzerServlet extends HttpServlet {
 
         } else {
             req.setAttribute(Constants.RESULTS, results);
-            req.getRequestDispatcher(a.getResultsTileName()).forward(req, resp);
+            req.getRequestDispatcher("results.tiles").forward(req, resp);
         }
     }
 

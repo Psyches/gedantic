@@ -27,16 +27,11 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.MixedResultSortComparator;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.AbstractEvent;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.FamilyEvent;
@@ -56,28 +51,29 @@ public class FactsWithoutSourcesAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
         for (Individual i : g.getIndividuals().values()) {
             for (PersonalName n : i.getNames()) {
                 if (n.getCitations().isEmpty()) {
-                    result.add(new IndividualRelatedResult(i, "Name", n.toString(), null));
+                    result.add(new AnalysisResult("Individual", i.getFormattedName(), "Name", n.toString(), "No source citations"));
                 }
             }
             for (IndividualEvent e : i.getEvents()) {
                 if (e.getCitations().isEmpty()) {
-                    result.add(new IndividualRelatedResult(i, e.getType().getDisplay(), getEventShortDescription(e), null));
+                    result.add(new AnalysisResult("Individial", i.getFormattedName(), e.getType().getDisplay(),
+                            getEventShortDescription(e), "No source citations"));
                 }
             }
         }
         for (Family f : g.getFamilies().values()) {
             for (FamilyEvent e : f.getEvents()) {
                 if (e.getCitations().isEmpty()) {
-                    result.add(new FamilyRelatedResult(f, e.getType().getDisplay(), getEventShortDescription(e), null));
+                    result.add(new AnalysisResult("Family", getFamilyDescriptor(f), e.getType().getDisplay(),
+                            getEventShortDescription(e), "No source citations"));
                 }
             }
         }
-        Collections.sort(result, new MixedResultSortComparator());
         return result;
     }
 
@@ -97,14 +93,6 @@ public class FactsWithoutSourcesAnalyzer extends AAnalyzer {
         return "Facts without sources";
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_MIXED_RESULTS;
-    }
-
     @Override
     public AnalysisTag[] getTags() {
         return new AnalysisTag[] { AnalysisTag.MISSING_DATA, AnalysisTag.FAMILIES, AnalysisTag.INDIVIDUALS, AnalysisTag.SOURCES };
@@ -122,11 +110,11 @@ public class FactsWithoutSourcesAnalyzer extends AAnalyzer {
         if (e.getDate() != null) {
             sb.append(e.getDate());
         } else {
-            sb.append("(no value)");
+            sb.append("(no problematicValue)");
         }
         sb.append(", Place: ");
         if (e.getPlace() == null || e.getPlace().getPlaceName() == null || e.getPlace().getPlaceName().trim().isEmpty()) {
-            sb.append("(no value)");
+            sb.append("(no problematicValue)");
         } else {
             sb.append(e.getPlace().getPlaceName());
         }

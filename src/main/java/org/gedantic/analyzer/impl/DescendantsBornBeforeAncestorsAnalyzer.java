@@ -30,11 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.DateAndString;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
+import org.gedantic.analyzer.DateAndString;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
 import org.gedcom4j.parser.DateParser.ImpreciseDatePreference;
@@ -50,8 +48,8 @@ public class DescendantsBornBeforeAncestorsAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
         for (Individual i : g.getIndividuals().values()) {
             DateAndString ibd = getBirthDate(i, ImpreciseDatePreference.FAVOR_EARLIEST);
             if (ibd == null || ibd.getDate() == null) {
@@ -62,8 +60,8 @@ public class DescendantsBornBeforeAncestorsAnalyzer extends AAnalyzer {
                 if (abd != null && abd.getDate() != null && abd.getDate().after(ibd.getDate())) {
                     // Ancestor born after individual
 
-                    result.add(new IndividualRelatedResult(i, "Ancestor", a, "Individual born " + ibd.getDateString()
-                            + ", and ancestor born " + abd.getDateString()));
+                    result.add(new AnalysisResult("Individual", i.getFormattedName(), "Birth", ibd.getDateString(), "Ancestor " + a
+                            .getFormattedName() + " born " + abd.getDateString()));
                 }
             }
         }
@@ -83,15 +81,7 @@ public class DescendantsBornBeforeAncestorsAnalyzer extends AAnalyzer {
      */
     @Override
     public String getName() {
-        return "Born before ancestors";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_INDIVIDUAL_RESULTS;
+        return "Descendants born before ancestors";
     }
 
     /**

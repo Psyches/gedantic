@@ -27,15 +27,11 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.IndividualResultSortComparator;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
 import org.gedcom4j.model.PersonalName;
@@ -50,13 +46,13 @@ public class PeopleWithoutNamesAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
+    public List<AnalysisResult> analyze(Gedcom g) {
 
-        List<AResult> result = new ArrayList<>();
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Individual i : g.getIndividuals().values()) {
             if (i.getNames() == null || i.getNames().isEmpty()) {
-                AResult r = new IndividualRelatedResult(i, null, (String) null, "Individual has no names");
+                AnalysisResult r = new AnalysisResult("Individual", i.toString(), null, (String) null, "Individual has no names");
                 result.add(r);
             } else {
                 for (PersonalName pn : i.getNames()) {
@@ -66,14 +62,14 @@ public class PeopleWithoutNamesAnalyzer extends AAnalyzer {
                     boolean noNameIndicated = ("//".equals(pn.getBasic()) || pn.getBasic() == null || "".equals(pn.getBasic()
                             .trim()) || "<No /name>/".equals(pn.getBasic()));
                     if (noNameIndicated && componentsUnspecified) {
-                        AResult r = new IndividualRelatedResult(i, null, (String) null, "One of this individual's names is blank");
+                        AnalysisResult r = new AnalysisResult("Individual", i.toString(), null, (String) null,
+                                "One of this individual's names is blank");
                         result.add(r);
                     }
                 }
             }
         }
 
-        Collections.sort(result, new IndividualResultSortComparator());
         return result;
     }
 
@@ -93,25 +89,17 @@ public class PeopleWithoutNamesAnalyzer extends AAnalyzer {
         return "People without names";
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_INDIVIDUAL_RESULTS;
-    }
-
     @Override
     public AnalysisTag[] getTags() {
         return new AnalysisTag[] { AnalysisTag.MISSING_DATA, AnalysisTag.INDIVIDUALS };
     }
 
     /**
-     * Return true if the supplied string value is null or empty when trimmed
+     * Return true if the supplied string problematicValue is null or empty when trimmed
      * 
      * @param s
      *            teh string
-     * @return true if the supplied string value is null or empty when trimmed
+     * @return true if the supplied string problematicValue is null or empty when trimmed
      */
     private boolean notSpecified(StringWithCustomFacts s) {
         if (s == null || s.getValue() == null || s.getValue().trim().isEmpty()) {

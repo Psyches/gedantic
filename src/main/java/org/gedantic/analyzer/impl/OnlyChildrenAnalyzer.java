@@ -27,17 +27,13 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.IndividualResultSortComparator;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.FamilyChild;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
@@ -52,8 +48,8 @@ public class OnlyChildrenAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Individual i : g.getIndividuals().values()) {
             if (i.getFamiliesWhereChild() == null || i.getFamiliesWhereChild().isEmpty()) {
@@ -77,12 +73,12 @@ public class OnlyChildrenAnalyzer extends AAnalyzer {
                     } else {
                         parents.append(fc.getFamily().getHusband().getIndividual().getFormattedName());
                     }
-                    result.add(new IndividualRelatedResult(i, "Parents", parents.toString(), null));
+                    result.add(new AnalysisResult("Individual", i.getFormattedName(), null, null, "Only child of " + parents
+                            .toString()));
                 }
             }
         }
 
-        Collections.sort(result, new IndividualResultSortComparator());
         return result;
     }
 
@@ -100,14 +96,6 @@ public class OnlyChildrenAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Only children";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_INDIVIDUAL_RESULTS;
     }
 
     @Override

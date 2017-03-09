@@ -27,13 +27,12 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.RelationshipRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.FamilyChild;
 import org.gedcom4j.model.Gedcom;
@@ -53,13 +52,25 @@ public class CircularAncestryAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
         for (Individual i : g.getIndividuals().values()) {
             List<Individual> ancestors = new ArrayList<>(i.getAncestors());
             if (ancestors.contains(i)) {
                 List<List<SimpleRelationship>> path = getCycle(i);
-                result.add(new RelationshipRelatedResult(i, null, path, null));
+                StringBuilder sb = new StringBuilder();
+                for (List<SimpleRelationship> list : path) {
+                    for (Iterator<SimpleRelationship> itr = list.iterator(); itr.hasNext();) {
+                        SimpleRelationship simpleRelationship = itr.next();
+                        sb.append(simpleRelationship.getIndividual2().getFormattedName());
+                        sb.append(" is ancestor of ");
+                        sb.append(simpleRelationship.getIndividual1().getFormattedName());
+                        if (itr.hasNext()) {
+                            sb.append("; ");
+                        }
+                    }
+                }
+                result.add(new AnalysisResult("Individual", i.getFormattedName(), null, null, sb.toString()));
             }
         }
         return result;
@@ -79,14 +90,6 @@ public class CircularAncestryAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Cyclical Ancestral Relationships";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_RELATIONSHIP_RESULTS;
     }
 
     /**

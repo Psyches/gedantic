@@ -27,15 +27,11 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.IndividualResultSortComparator;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
 import org.gedcom4j.model.PersonalName;
@@ -51,9 +47,9 @@ public class PeopleWithOnlySurnamesAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
+    public List<AnalysisResult> analyze(Gedcom g) {
 
-        List<AResult> result = new ArrayList<>();
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Individual i : g.getIndividuals().values()) {
             if (i.getNames() == null || i.getNames().isEmpty()) {
@@ -62,16 +58,23 @@ public class PeopleWithOnlySurnamesAnalyzer extends AAnalyzer {
             boolean hadSurname = false;
             boolean somethingOtherThanSurname = false;
             for (PersonalName pn : i.getNames()) {
-                if ((isSpecified(pn.getBasic()) && !"//".equals(pn.getBasic())) || isSpecified(pn.getSurname())) {
+                if (isSpecified(pn.getSurname())) {
                     // Don't count empty surnames
                     hadSurname = true;
                 }
 
-                // Characters before a slash would be something other than a surname
-                int firstSlash = pn.getBasic().indexOf('/');
-                if (firstSlash > 0) {
-                    somethingOtherThanSurname = true;
-                    break; // Don't need to check any more names
+                if (pn.getBasic() != null) {
+
+                    if (pn.getBasic().contains("/") && !pn.getBasic().contains("//")) {
+                        hadSurname = true;
+                    }
+
+                    // Characters before a slash would be something other than a surname
+                    int firstSlash = pn.getBasic().indexOf('/');
+                    if (firstSlash > 0) {
+                        somethingOtherThanSurname = true;
+                        break; // Don't need to check any more names
+                    }
                 }
 
                 // Check the name components too
@@ -84,10 +87,9 @@ public class PeopleWithOnlySurnamesAnalyzer extends AAnalyzer {
                 // Next person
                 continue;
             }
-            result.add(new IndividualRelatedResult(i, null, (String) null, null));
+            result.add(new AnalysisResult("Individual", i.getFormattedName(), null, null, "No name other than surname available."));
         }
 
-        Collections.sort(result, new IndividualResultSortComparator());
         return result;
     }
 
@@ -105,14 +107,6 @@ public class PeopleWithOnlySurnamesAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "People with only surnames";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_INDIVIDUAL_RESULTS;
     }
 
     @Override

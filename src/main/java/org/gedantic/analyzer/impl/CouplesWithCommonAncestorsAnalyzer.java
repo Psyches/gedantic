@@ -31,10 +31,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
@@ -48,9 +46,9 @@ import org.gedcom4j.relationship.AncestryCalculator;
 public class CouplesWithCommonAncestorsAnalyzer extends AAnalyzer {
 
     @Override
-    public List<AResult> analyze(Gedcom g) {
+    public List<AnalysisResult> analyze(Gedcom g) {
         AncestryCalculator ac = new AncestryCalculator();
-        List<AResult> result = new ArrayList<>();
+        List<AnalysisResult> result = new ArrayList<>();
         for (Family f : g.getFamilies().values()) {
             if (f.getWife() != null && f.getHusband() != null) {
 
@@ -58,7 +56,7 @@ public class CouplesWithCommonAncestorsAnalyzer extends AAnalyzer {
                         .getIndividual());
 
                 for (Individual commonAncestor : lowestCommonAncestors) {
-                    result.add(new FamilyRelatedResult(f, null, commonAncestor, null));
+                    result.add(new AnalysisResult("Family", getFamilyDescriptor(f), null, commonAncestor.getFormattedName(), null));
                 }
 
             }
@@ -74,11 +72,6 @@ public class CouplesWithCommonAncestorsAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Couples with common ancestors";
-    }
-
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_COUPLE_RESULTS;
     }
 
     @Override

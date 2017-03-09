@@ -27,16 +27,11 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.MixedResultSortComparator;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.FamilyEvent;
 import org.gedcom4j.model.Gedcom;
@@ -54,14 +49,15 @@ public class DatesButNoPlacesAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
         for (Individual i : g.getIndividuals().values()) {
             for (IndividualEvent e : i.getEvents()) {
                 boolean hasDate = e.getDate() != null && e.getDate().getValue() != null;
                 boolean hasPlace = e.getPlace() != null;
                 if (hasDate & !hasPlace) {
-                    result.add(new IndividualRelatedResult(i, e.getType().getDisplay(), e.getDate().getValue(), null));
+                    result.add(new AnalysisResult("Individual", i.getFormattedName(), e.getType().getDisplay(), e.getDate()
+                            .getValue(), "No place information"));
                 }
             }
         }
@@ -70,11 +66,11 @@ public class DatesButNoPlacesAnalyzer extends AAnalyzer {
                 boolean hasDate = e.getDate() != null && e.getDate().getValue() != null;
                 boolean hasPlace = e.getPlace() != null;
                 if (hasDate & !hasPlace) {
-                    result.add(new FamilyRelatedResult(f, e.getType().getDisplay(), e.getDate().getValue(), null));
+                    result.add(new AnalysisResult("Family", getFamilyDescriptor(f), e.getType().getDisplay(), e.getDate()
+                            .getValue(), "No place information"));
                 }
             }
         }
-        Collections.sort(result, new MixedResultSortComparator());
         return result;
     }
 
@@ -92,14 +88,6 @@ public class DatesButNoPlacesAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Dates but no places";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_MIXED_RESULTS;
     }
 
     @Override

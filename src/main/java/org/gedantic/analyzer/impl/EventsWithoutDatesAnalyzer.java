@@ -27,16 +27,11 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.MixedResultSortComparator;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.FamilyEvent;
 import org.gedcom4j.model.Gedcom;
@@ -56,23 +51,24 @@ public class EventsWithoutDatesAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
         for (Individual i : g.getIndividuals().values()) {
             for (IndividualEvent e : i.getEvents()) {
                 if (e.getDate() == null || e.getDate().getValue() == null || e.getDate().getValue().trim().isEmpty()) {
-                    result.add(new IndividualRelatedResult(i, getFactTypeWithDescription(e), (String) null, null));
+                    result.add(new AnalysisResult("Individual", i.getFormattedName(), getFactTypeWithDescription(e), null,
+                            "No date information"));
                 }
             }
         }
         for (Family f : g.getFamilies().values()) {
             for (FamilyEvent e : f.getEvents()) {
                 if (e.getDate() == null || e.getDate().getValue() == null || e.getDate().getValue().trim().isEmpty()) {
-                    result.add(new FamilyRelatedResult(f, getFactTypeWithDescription(e), (String) null, null));
+                    result.add(new AnalysisResult("Family", getFamilyDescriptor(f), getFactTypeWithDescription(e), null,
+                            "No date information"));
                 }
             }
         }
-        Collections.sort(result, new MixedResultSortComparator());
         return result;
     }
 
@@ -90,14 +86,6 @@ public class EventsWithoutDatesAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Events without dates";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_MIXED_RESULTS;
     }
 
     @Override

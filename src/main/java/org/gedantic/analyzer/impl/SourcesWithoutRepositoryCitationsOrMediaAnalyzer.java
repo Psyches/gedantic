@@ -30,10 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.SourceRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Multimedia;
 import org.gedcom4j.model.RepositoryCitation;
@@ -41,7 +39,7 @@ import org.gedcom4j.model.Source;
 
 /**
  * Analyzer that finds {@link Source} items without {@link RepositoryCitation} or {@link Multimedia} records attached. Not a
- * problem, but a good potential area for more research so the sources can be validated.
+ * problemDescription, but a good potential area for more research so the sources can be validated.
  * 
  * @author frizbog
  */
@@ -51,14 +49,15 @@ public class SourcesWithoutRepositoryCitationsOrMediaAnalyzer extends AAnalyzer 
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
         if (g == null || g.getSources() == null) {
             return result;
         }
         for (Source s : g.getSources().values()) {
             if (s != null && (s.getMultimedia() == null || s.getMultimedia().isEmpty()) && (s.getRepositoryCitation() == null)) {
-                result.add(new SourceRelatedResult(s, null, null, null));
+                result.add(new AnalysisResult("Source", "" + s.getTitle(), null, null,
+                        "No Repository Citations or Multimedia records attached."));
             }
         }
         return result;
@@ -78,14 +77,6 @@ public class SourcesWithoutRepositoryCitationsOrMediaAnalyzer extends AAnalyzer 
     @Override
     public String getName() {
         return "Sources without repository citations or media";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_SOURCE_RESULTS;
     }
 
     @Override

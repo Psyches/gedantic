@@ -30,11 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.result.DateAndString;
-import org.gedantic.analyzer.result.FamilyRelatedResult;
-import org.gedantic.web.Constants;
+import org.gedantic.analyzer.DateAndString;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
@@ -59,8 +57,8 @@ public class BirthsToYoungParentsAnalyzer extends AAnalyzer {
     private static final long MILLIS_IN_YEAR = (long) (365.25 * 24 * 60 * 60 * 1000);
 
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Family f : g.getFamilies().values()) {
             // No kids? Not interested
@@ -118,7 +116,8 @@ public class BirthsToYoungParentsAnalyzer extends AAnalyzer {
                     }
                 }
                 if (problem.length() > 0) {
-                    result.add(new FamilyRelatedResult(f, null, kid, problem.toString()));
+                    result.add(new AnalysisResult("Individual", kid.getFormattedName(), "Birth", kidEarliestBirthDate
+                            .getDateString(), problem.toString()));
                 }
             }
 
@@ -135,11 +134,6 @@ public class BirthsToYoungParentsAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Children of young parents";
-    }
-
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_COUPLE_RESULTS;
     }
 
     @Override

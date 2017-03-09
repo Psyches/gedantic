@@ -27,15 +27,11 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.IndividualResultSortComparator;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Family;
 import org.gedcom4j.model.FamilyChild;
 import org.gedcom4j.model.Gedcom;
@@ -52,25 +48,24 @@ public class PeopleWithOneMissingParentAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Individual i : g.getIndividuals().values()) {
             if (i.getFamiliesWhereChild() != null && !i.getFamiliesWhereChild().isEmpty()) {
                 for (FamilyChild fc : i.getFamiliesWhereChild()) {
                     Family f = fc.getFamily();
                     if (f.getWife() == null && f.getHusband() != null) {
-                        result.add(new IndividualRelatedResult(i, null, (String) null, "Mother is missing - father is " + f
-                                .getHusband()));
+                        result.add(new AnalysisResult("Individual", i.getFormattedName(), null, null,
+                                "Mother is missing - father is " + f.getHusband().getIndividual()));
                     } else if (f.getWife() != null && f.getHusband() == null) {
-                        result.add(new IndividualRelatedResult(i, null, (String) null, "Father is missing - mother is " + f
-                                .getWife()));
+                        result.add(new AnalysisResult("Individual", i.getFormattedName(), null, null,
+                                "Father is missing - mother is " + f.getWife().getIndividual()));
                     }
                 }
             }
         }
 
-        Collections.sort(result, new IndividualResultSortComparator());
         return result;
     }
 
@@ -88,14 +83,6 @@ public class PeopleWithOneMissingParentAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "People with one missing parent";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_INDIVIDUAL_RESULTS;
     }
 
     @Override

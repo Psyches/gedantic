@@ -27,15 +27,11 @@
 package org.gedantic.analyzer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.gedantic.analyzer.AAnalyzer;
-import org.gedantic.analyzer.AResult;
+import org.gedantic.analyzer.AnalysisResult;
 import org.gedantic.analyzer.AnalysisTag;
-import org.gedantic.analyzer.comparator.IndividualResultSortComparator;
-import org.gedantic.analyzer.result.IndividualRelatedResult;
-import org.gedantic.web.Constants;
 import org.gedcom4j.model.Gedcom;
 import org.gedcom4j.model.Individual;
 
@@ -48,21 +44,21 @@ public class UnspecifiedSexAnalyzer extends AAnalyzer {
      * {@inheritDoc}
      */
     @Override
-    public List<AResult> analyze(Gedcom g) {
-        List<AResult> result = new ArrayList<>();
+    public List<AnalysisResult> analyze(Gedcom g) {
+        List<AnalysisResult> result = new ArrayList<>();
 
         for (Individual i : g.getIndividuals().values()) {
             if (i.getSex() == null || i.getSex().getValue().trim().isEmpty()) {
-                result.add(new IndividualRelatedResult(i, "SEX", "unspecified", null));
+                result.add(new AnalysisResult("Individual", i.getFormattedName(), "Sex", null, "Sex unspecified."));
             } else {
                 if (!"U".equals(i.getSex().getValue()) && !"M".equals(i.getSex().getValue()) && !"F".equals(i.getSex()
                         .getValue())) {
-                    result.add(new IndividualRelatedResult(i, "SEX", i.getSex().getValue(), "Only M, F, or U are allowed"));
+                    result.add(new AnalysisResult("Individual", i.getFormattedName(), "Sex", i.getSex().getValue(),
+                            "Only M, F, or U are allowed"));
                 }
             }
         }
 
-        Collections.sort(result, new IndividualResultSortComparator());
         return result;
     }
 
@@ -80,14 +76,6 @@ public class UnspecifiedSexAnalyzer extends AAnalyzer {
     @Override
     public String getName() {
         return "Unspecified sex";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getResultsTileName() {
-        return Constants.URL_ANALYSIS_INDIVIDUAL_RESULTS;
     }
 
     @Override
